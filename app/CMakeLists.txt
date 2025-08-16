@@ -13,4 +13,11 @@ target_sources(app PRIVATE
   src/main.c
 )
 
+target_sources(app PRIVATE
+  platform_nrf/bus/m_spi.c
+)
+
+target_include_directories(app PRIVATE
+  platform_nrf/bus
+)
 # NORDIC SDK APP END

@@ -34,6 +34,8 @@
 
 #include <zephyr/logging/log.h>
 
+#include "m_spi.h"
+
 #define LOG_MODULE_NAME peripheral_uart
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
@@ -662,7 +664,7 @@ void ble_write_thread(void)
 	struct uart_data_t nus_data = {
 		.len = 0,
 	};
-
+	spi_init();
 	for (;;) {
 		/* Wait indefinitely for data to be sent over bluetooth */
 		struct uart_data_t *buf = k_fifo_get(&fifo_uart_rx_data,
