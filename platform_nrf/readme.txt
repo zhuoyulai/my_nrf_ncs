@@ -1,0 +1,1 @@
+nordic platform code
