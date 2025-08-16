@@ -1,5 +1,5 @@
 # 忽略整个 build 文件夹
-peripheral_uart/build
+app/build
 
 # 忽略 logs 文件夹
 #logs/
