@@ -27,8 +27,14 @@ my_spi_master: &spi1 {
     };
 };
 
-/ {
-	chosen {
-		nordic,nus-uart = &uart0;
-	};
+&gpio0 {
+    status = "okay";
 };
+
+
+
+// / {
+// 	chosen {
+// 		nordic,nus-uart = &uart0;
+// 	};
+// };
