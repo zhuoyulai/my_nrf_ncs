@@ -34,7 +34,8 @@
 
 #include <zephyr/logging/log.h>
 
-#include "m_spi.h"
+#include <lvgl.h>
+#include "gui.h"
 
 #define LOG_MODULE_NAME peripheral_uart
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
@@ -608,11 +609,7 @@ int main(void)
 	int blink_status = 0;
 	int err = 0;
 
-	err = m_spi_instance_init();
-	if (err) {
-		LOG_ERR("Failed to initialize SPI instance (err: %d)", err);
-		return 0;
-	}
+
 	// configure_gpio();
 
 	// err = uart_init();
@@ -653,11 +650,15 @@ int main(void)
 	// }
 
 	k_work_init(&adv_work, adv_work_handler);
+	LOG_INF("ble name is %s", DEVICE_NAME);
 	advertising_start();
+	//k_sleep(K_MSEC(2000));
+	gui_init();
 
 	for (;;) {
 		// dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
-		// k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
+		//lv_timer_handler();
+		k_sleep(K_MSEC(10));
 	}
 }
 

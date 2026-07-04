@@ -1,0 +1,18 @@
+# Legacy quick reference — see docs/display-assembly-interface.md for full wiring.
+
+ST7789V2 (Qingfeng 840 P14)
+SCK  -> P0.27---P0.30
+MOSI -> P0.26--->P0.29
+MISO -> (NC, SW uses 26)
+CS   -> P0.22--->P0.03
+DC   -> P0.20--->P0.02
+RST  -> P0.19--->P0.28
+BL   -> P1.03
+
+CST816T
+SCL  -> P0.06
+SDA  -> P0.07
+INT  -> P0.05
+RST  -> P1.02
+
+Reserved: P0.02 SWDIO, P0.03 SWCLK (P9 debug)

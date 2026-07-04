@@ -1,40 +1,126 @@
 &pinctrl {
     spi1_default: spi1_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 31)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 30)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 29)>;
+            /* Qingfeng 840 P14: OSCK=P0.30, MOSI=P0.29 */
+            psels = <NRF_PSEL(SPIM_SCK, 0, 30)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 29)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 26)>;
         };
     };
     spi1_sleep: spi1_sleep {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 31)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 30)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 29)>;
+            psels = <NRF_PSEL(SPIM_SCK, 0, 30)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 29)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 26)>;
+            low-power-enable;
+        };
+    };
+
+    i2c0_default: i2c0_default {
+        group1 {
+            /* Qingfeng 840 P14: SCL=P0.06, SDA=P0.07 */
+            psels = <NRF_PSEL(TWIM_SCL, 0, 6)>,
+                    <NRF_PSEL(TWIM_SDA, 0, 7)>;
+        };
+    };
+
+    i2c0_sleep: i2c0_sleep {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SCL, 0, 6)>,
+                    <NRF_PSEL(TWIM_SDA, 0, 7)>;
             low-power-enable;
         };
     };
 };
 
 my_spi_master: &spi1 {
-    compatible = "nordic,nrf-spi";
     status = "okay";
     pinctrl-0 = <&spi1_default>;
     pinctrl-1 = <&spi1_sleep>;
-    cs-gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
-    reg_my_spi_master: spi-dev-a@0 {
-        reg = <0>;
-    };
+    cs-gpios = <&gpio0 03 GPIO_ACTIVE_LOW>;
 };
 
 &gpio0 {
+	status = "okay";
+	// /* Qingfeng 840 uses P0.19–P0.03 for LCD; not DK QSPI — drop DK reservations */
+	// /delete-property/ gpio-reserved-ranges;
+};
+
+&gpio1 {
     status = "okay";
 };
 
+/* ST7789V2 (SPI) + LVGL display binding */
+#include <zephyr/dt-bindings/mipi_dbi/mipi_dbi.h>
 
+/ {
+	chosen {
+		zephyr,display = &st7789v0;
+	};
 
-// / {
-// 	chosen {
-// 		nordic,nus-uart = &uart0;
-// 	};
-// };
+	mipi_dbi0: mipi_dbi_st7789v2@0 {
+		compatible = "zephyr,mipi-dbi-spi";
+		spi-dev = <&spi1>;
+		/* Qingfeng 840 P14: DC=P0.02, RST=P0.28; keep P0.02/03 for SWD */
+		dc-gpios = <&gpio0 02 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
+		write-only;
+		reg = <0 1>;
+		status = "okay";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		st7789v0: st7789v@0 {
+			compatible = "sitronix,st7789v";
+			reg = <0>;
+			status = "okay";
+			mipi-max-frequency = <8000000>;
+			width = <240>;
+			height = <280>;
+			x-offset = <0>;
+			y-offset = <20>;
+			vcom = <0x19>;
+			gctrl = <0x35>;
+			vrhs = <0x12>;
+			vdvs = <0x20>;
+			mdac = <0x00>;
+			gamma = <0x01>;
+			colmod = <0x05>;
+			lcm = <0x2c>;
+			porch-param = [0c 0c 00 33 33];
+			cmd2en-param = [5a 69 02 01];
+			pwctrl1-param = [a4 a1];
+			pvgam-param = [D0 04 0D 11 13 2B 3F 54 4C 18 0D 0B 1F 23];
+			nvgam-param = [D0 04 0C 11 13 2C 3F 44 51 2F 1F 1F 20 23];
+			ram-param = [00 F0];
+			rgb-param = [CD 08 14];
+			mipi-mode = "MIPI_DBI_MODE_SPI_4WIRE";
+			/* Datasheet: CPOL=0, CPHA=0 -> SPI mode 0 */
+		};
+	};
+};
+
+/* CST816T (I2C) touch controller */
+&i2c0 {
+	status = "okay";
+	pinctrl-0 = <&i2c0_default>;
+	pinctrl-1 = <&i2c0_sleep>;
+	pinctrl-names = "default", "sleep";
+
+	cst816t: cst816t@15 {
+		compatible = "cst,cst816t";
+		reg = <0x15>;
+		int-gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;    /* P0.05, P14 INT */
+		reset-gpios = <&gpio1 2 GPIO_ACTIVE_LOW>; /* P1.02, TP_RST flywire */
+		status = "okay";
+	};
+};
+
+/* Qingfeng 840: no DK QSPI MX25R64 */
+&qspi {
+	status = "disabled";
+};
+
+&mx25r64 {
+	status = "disabled";
+};

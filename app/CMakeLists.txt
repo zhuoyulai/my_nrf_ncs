@@ -14,6 +14,7 @@ project(MY_APP_PRJ)
 # NORDIC SDK APP START
 target_sources(app PRIVATE
   src/main.c
+  src/gui.c
 )
 
 add_subdirectory(platform_nrf)
